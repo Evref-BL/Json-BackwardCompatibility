@@ -13,6 +13,11 @@ JsonTests >> json: aString equals: aValue [
 ]
 
 { #category : #'as yet unclassified' }
+JsonTests >> render: anObject equals: aString [
+	self assert: (Json render: anObject) = aString
+]
+
+{ #category : #'as yet unclassified' }
 JsonTests >> testArray [
 	self json: '[]' equals: #().
 	self json: '[[]]' equals: #(#()).
@@ -72,4 +77,12 @@ JsonTests >> testDictionary [
 	self json: '{"a": "a"}' equals: (Dictionary new at: 'a' put: 'a'; yourself).
 	self json: '{"a": [[]]}' equals: (Dictionary new at: 'a' put: #(#()); yourself).
 	self json: '{"a":"b", "b":"a"}' equals: ({'a'->'b'. 'b'->'a'} as: Dictionary).
+]
+
+{ #category : #'as yet unclassified' }
+JsonTests >> testWriteString [
+	self render: '"' equals: '"\""'.
+	self render: '\' equals: '"\\"'.
+	self render: 'hi' equals: '"hi"'.
+	self render: ({$a. Character lf. $b} as: String) equals: '"a\nb"'.
 ]

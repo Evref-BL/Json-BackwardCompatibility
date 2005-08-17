@@ -7,8 +7,30 @@ Class {
 	#instVars : [
 		'stream'
 	],
+	#classVars : [
+		'CharacterEscapeMap'
+	],
 	#category : 'JSON'
 }
+
+{ #category : #'as yet unclassified' }
+Json class >> escapeForCharacter: c [
+	^ CharacterEscapeMap at: c ifAbsent: [nil]
+]
+
+{ #category : #'as yet unclassified' }
+Json class >> initialize [
+	"Json initialize."
+	CharacterEscapeMap := Dictionary newFrom: {
+		$" -> $".
+		$\ -> $\.
+		Character backspace -> $b.
+		Character lf -> $n.
+		Character newPage -> $f.
+		Character cr -> $r.
+		Character tab -> $t.
+	}.
+]
 
 { #category : #'as yet unclassified' }
 Json class >> numbersMayContain: aChar [

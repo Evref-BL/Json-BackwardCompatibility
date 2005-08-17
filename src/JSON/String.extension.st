@@ -2,15 +2,13 @@ Extension { #name : #String }
 
 { #category : #'*JSON-writing' }
 String >> jsonWriteOn: aStream [
+	| replacement |
 	aStream nextPut: $".
 	self do: [:ch |
-		(ch == $" or: [ch == $\])
-			ifTrue: [ aStream nextPut: $\; nextPut: ch ]
-			ifFalse: [
-				aStream nextPut: ch.
-				"TODO: escape special chars (lf, cr, tab etc) properly"
-				#tonyg.
-			]
+		replacement _ Json escapeForCharacter: ch.
+		replacement
+			ifNil: [ aStream nextPut: ch ]
+			ifNotNil: [ aStream nextPut: $\; nextPut: replacement ].
 	].
 	aStream nextPut: $".
 
