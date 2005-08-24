@@ -33,6 +33,11 @@ Json class >> initialize [
 ]
 
 { #category : #'as yet unclassified' }
+Json class >> mimeType [
+	^ 'application/x-json'
+]
+
+{ #category : #'as yet unclassified' }
 Json class >> numbersMayContain: aChar [
 	^ aChar isDigit or: [#($- $+ $. $e $E) includes: aChar]
 ]
