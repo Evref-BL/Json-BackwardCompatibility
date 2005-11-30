@@ -4,17 +4,30 @@ I provide a number of test cases for class Json.
 Class {
 	#name : #JsonTests,
 	#superclass : #TestCase,
-	#category : 'JSON'
+	#category : #JSON
 }
 
 { #category : #'as yet unclassified' }
 JsonTests >> json: aString equals: aValue [
-	self assert: (Json readFrom: aString readStream) = aValue.
+	| readValue |
+	readValue := self readFrom: aString.
+	self assert: readValue = aValue.
+]
+
+{ #category : #'as yet unclassified' }
+JsonTests >> readFrom: aString [
+	^ (Json newWithConstructors: {JsonDummyTestObject.}) readFrom: aString readStream
+
 ]
 
 { #category : #'as yet unclassified' }
 JsonTests >> render: anObject equals: aString [
 	self assert: (Json render: anObject) = aString
+]
+
+{ #category : #'as yet unclassified' }
+JsonTests >> simpleDummyObject [
+	^ JsonDummyTestObject new a: 1; b: 2; c: 3; yourself
 ]
 
 { #category : #'as yet unclassified' }
@@ -72,11 +85,35 @@ JsonTests >> testAtomTrue [
 ]
 
 { #category : #'as yet unclassified' }
+JsonTests >> testCtor [
+	self json: '@JsonDummyTestObject {"a": 1, "b": 2, "c": 3}' equals: self simpleDummyObject.
+	self json: (Json render: self simpleDummyObject) equals: self simpleDummyObject.
+]
+
+{ #category : #'as yet unclassified' }
 JsonTests >> testDictionary [
 	self json: '{}' equals: (Dictionary new).
 	self json: '{"a": "a"}' equals: (Dictionary new at: 'a' put: 'a'; yourself).
 	self json: '{"a": [[]]}' equals: (Dictionary new at: 'a' put: #(#()); yourself).
 	self json: '{"a":"b", "b":"a"}' equals: ({'a'->'b'. 'b'->'a'} as: Dictionary).
+]
+
+{ #category : #'as yet unclassified' }
+JsonTests >> testMissingCtor [
+	self should: [self readFrom: '@Missing[]']
+		raise: JsonSyntaxError
+		whoseDescriptionIncludes: 'Unknown ctor'
+		description: 'Unknown ctor'
+
+]
+
+{ #category : #'as yet unclassified' }
+JsonTests >> testMissingCtorNoMap [
+	self should: [Json new readFrom: '@Missing[]' readStream]
+		raise: JsonSyntaxError
+		whoseDescriptionIncludes: 'Unknown ctor'
+		description: 'Unknown ctor'
+
 ]
 
 { #category : #'as yet unclassified' }

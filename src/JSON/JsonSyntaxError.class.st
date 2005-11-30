@@ -4,5 +4,5 @@ Class Json signals instances of me when an input stream contains invalid JSON in
 Class {
 	#name : #JsonSyntaxError,
 	#superclass : #Error,
-	#category : 'JSON'
+	#category : #JSON
 }

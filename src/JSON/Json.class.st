@@ -1,16 +1,17 @@
 "
-This class reads and writes JSON format data - strings, numbers, boolean, nil, arrays and dictionaries. See http://www.crockford.com/JSON/index.html.
+This class reads and writes JSON format data - strings, numbers, boolean, nil, arrays and dictionaries. See http://www.crockford.com/JSON/index.html. It has been extended with syntax for invoking a prearranged list of constructors on read objects.
 "
 Class {
 	#name : #Json,
 	#superclass : #Object,
 	#instVars : [
-		'stream'
+		'stream',
+		'ctorMap'
 	],
 	#classVars : [
 		'CharacterEscapeMap'
 	],
-	#category : 'JSON'
+	#category : #JSON
 }
 
 { #category : #'as yet unclassified' }
@@ -38,13 +39,24 @@ Json class >> mimeType [
 ]
 
 { #category : #'as yet unclassified' }
+Json class >> newWithConstructors: aCollection [
+	| m |
+	m _ Dictionary new.
+	aCollection do: [:each |
+		(each isKindOf: Association)
+			ifTrue: [m add: each]
+			ifFalse: [m at: each name asString put: each]].
+	^ self new ctorMap: m; yourself.
+]
+
+{ #category : #'as yet unclassified' }
 Json class >> numbersMayContain: aChar [
 	^ aChar isDigit or: [#($- $+ $. $e $E) includes: aChar]
 ]
 
 { #category : #'as yet unclassified' }
 Json class >> readFrom: aStream [
-	^ self new stream: aStream; readAny.
+	^ self new readFrom: aStream.
 ]
 
 { #category : #'as yet unclassified' }
@@ -55,10 +67,35 @@ Json class >> render: anObject [
 	^ s contents.
 ]
 
+{ #category : #'as yet unclassified' }
+Json class >> render: anObject withConstructor: aConstructorName on: aStream [
+	aStream nextPutAll: '@', aConstructorName.
+	anObject jsonWriteOn: aStream.
+
+]
+
+{ #category : #'as yet unclassified' }
+Json class >> renderInstanceVariables: aCollection of: anObject on: aStream [
+	| map |
+	map _ Dictionary new.
+	aCollection do: [:ivarName | map at: ivarName put: (anObject instVarNamed: ivarName)].
+	self render: map withConstructor: anObject class name asString on: aStream
+]
+
 { #category : #private }
 Json >> consume: aString returning: anObject [
 	aString do: [:c | self next == c ifFalse: [JsonSyntaxError signal: 'Expected ''', aString, ''''] ].
 	^ anObject
+]
+
+{ #category : #accessing }
+Json >> ctorMap [
+	^ ctorMap
+]
+
+{ #category : #accessing }
+Json >> ctorMap: m [
+	ctorMap _ m
 ]
 
 { #category : #private }
@@ -95,6 +132,7 @@ Json >> readAny [
 	c == $t ifTrue: [^ self consume: 'true' returning: true].
 	c == $f ifTrue: [^ self consume: 'false' returning: false].
 	c == $n ifTrue: [^ self consume: 'null' returning: nil].
+	c == $@ ifTrue: [self next. ^ self readConstructor].
 	(Json numbersMayContain: c) ifTrue: [^ self readNumber].
 	JsonSyntaxError signal: 'Unknown Json input'
 ]
@@ -112,6 +150,25 @@ Json >> readArray [
 					self next.]
 			ifFalse: [needComma _ true]. 
 		a add: self readAny.
+	] repeat.
+
+]
+
+{ #category : #private }
+Json >> readConstructor [
+	| s c v ctor |
+	s := WriteStream on: ''.
+	[
+		c := self peek.
+		c ifNil: [JsonSyntaxError signal: 'Premature EOF reading constructor name'].
+		((c == $.) or: [c isLetter])
+			ifTrue: [s nextPut: c. self next]
+			ifFalse: [
+				v := self readAny.
+				s := s contents.
+				ctor _ ctorMap ifNotNil: [ctor _ ctorMap at: s ifAbsent: [nil]].
+				ctor ifNil: [JsonSyntaxError signal: 'Unknown ctor ', s].
+				^ ctor constructFromJson: v]
 	] repeat.
 
 ]
@@ -137,6 +194,12 @@ Json >> readDictionary [
 		m at: k put: v.
 	] repeat.
 
+]
+
+{ #category : #parsing }
+Json >> readFrom: aStream [
+	self stream: aStream.
+	^ self readAny
 ]
 
 { #category : #private }
