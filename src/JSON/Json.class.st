@@ -107,6 +107,7 @@ Json >> interpretStringEscape [
 	c == $f ifTrue: [^ Character newPage].
 	c == $r ifTrue: [^ Character cr].
 	c == $t ifTrue: [^ Character tab].
+	c == $u ifTrue: [^ self unescapeUnicode].
 	^ c.
 ]
 
@@ -273,5 +274,13 @@ Json >> stream [
 Json >> stream: anObject [
 	"Set the value of stream"
 
-	stream _ anObject
+	stream := anObject.
+	stream reset.
+]
+
+{ #category : #private }
+Json >> unescapeUnicode [
+	|string|
+	string := (String with: self next with: self next with: self next with: self next) asUppercase.
+	^ Unicode value: (Number readFrom: '16r', string)
 ]
