@@ -100,20 +100,17 @@ JsonTests >> testDictionary [
 
 { #category : #'as yet unclassified' }
 JsonTests >> testMissingCtor [
-	self should: [self readFrom: '@Missing[]']
+	self 
+		should: [self readFrom: '@Missing[]']
 		raise: JsonSyntaxError
-		whoseDescriptionIncludes: 'Unknown ctor'
-		description: 'Unknown ctor'
 
 ]
 
 { #category : #'as yet unclassified' }
 JsonTests >> testMissingCtorNoMap [
-	self should: [Json new readFrom: '@Missing[]' readStream]
+	self 
+		should: [Json new readFrom: '@Missing[]' readStream]
 		raise: JsonSyntaxError
-		whoseDescriptionIncludes: 'Unknown ctor'
-		description: 'Unknown ctor'
-
 ]
 
 { #category : #'as yet unclassified' }
