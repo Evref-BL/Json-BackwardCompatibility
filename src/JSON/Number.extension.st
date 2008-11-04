@@ -2,5 +2,6 @@ Extension { #name : #Number }
 
 { #category : #'*JSON-writing' }
 Number >> jsonWriteOn: aWriteStream [ 
-	aWriteStream nextPutAll: self asString.
+
+	self printOn: aWriteStream base: 10
 ]

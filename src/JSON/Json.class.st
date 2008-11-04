@@ -8,29 +8,39 @@ Class {
 		'stream',
 		'ctorMap'
 	],
-	#classVars : [
-		'CharacterEscapeMap'
+	#classInstVars : [
+		'escapeArray'
 	],
 	#category : #JSON
 }
 
 { #category : #'as yet unclassified' }
 Json class >> escapeForCharacter: c [
-	^ CharacterEscapeMap at: c ifAbsent: [nil]
+	
+	| index |
+	(index := c asciiValue + 1) <= escapeArray size
+		ifTrue: [ ^escapeArray at: index ].
+	^nil
 ]
 
 { #category : #'as yet unclassified' }
 Json class >> initialize [
 	"Json initialize."
-	CharacterEscapeMap := Dictionary newFrom: {
-		$" -> $".
-		$\ -> $\.
-		Character backspace -> $b.
-		Character lf -> $n.
-		Character newPage -> $f.
-		Character cr -> $r.
-		Character tab -> $t.
-	}.
+	
+	escapeArray := Array new: 128.
+	(0 to: 31), #(127) do: [ :each |
+		escapeArray at: each + 1 put: '\u', (each printStringHex padded: #left to: 4 with: $0) ].
+	{
+		$" -> '\"'.
+		$\ -> '\\'.
+		Character backspace -> '\b'.
+		Character lf -> '\n'.
+		Character newPage -> '\f'.
+		Character cr -> '\r'.
+		Character tab -> '\t'.
+	} do: [ :each |
+		escapeArray at: each key asciiValue + 1 put: each value ].
+
 ]
 
 { #category : #'as yet unclassified' }
