@@ -7,7 +7,7 @@ Collection >> jsonWriteOn: aStream [
 	aStream nextPut: $[.
 	self do: [:v |
 		needComma
-			ifTrue: [ aStream nextPutAll: ', ' ]
+			ifTrue: [ aStream nextPut: $, ]
 			ifFalse: [ needComma := true ].
 		v jsonWriteOn: aStream.
 	].

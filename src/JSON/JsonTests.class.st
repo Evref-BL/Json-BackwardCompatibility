@@ -73,6 +73,8 @@ JsonTests >> testAtomString [
 	self json: '"\""' equals: '"'.
 	self json: '"\\"' equals: '\'.
 	self json: '""' equals: ''.
+	self json: '"a\u0004b"' equals: ({$a. Character value: 4. $b} as: String).
+	self json: '"a\nb"' equals: ({$a. Character lf. $b} as: String).
 ]
 
 { #category : #'as yet unclassified' }
@@ -92,10 +94,10 @@ JsonTests >> testCtor [
 
 { #category : #'as yet unclassified' }
 JsonTests >> testDictionary [
-	self json: '{}' equals: (Dictionary new).
-	self json: '{"a": "a"}' equals: (Dictionary new at: 'a' put: 'a'; yourself).
-	self json: '{"a": [[]]}' equals: (Dictionary new at: 'a' put: #(#()); yourself).
-	self json: '{"a":"b", "b":"a"}' equals: ({'a'->'b'. 'b'->'a'} as: Dictionary).
+	self json: '{}' equals: (JsonObject new).
+	self json: '{"a": "a"}' equals: (JsonObject new at: 'a' put: 'a'; yourself).
+	self json: '{"a": [[]]}' equals: (JsonObject new at: 'a' put: #(#()); yourself).
+	self json: '{"a":"b", "b":"a"}' equals: ({'a'->'b'. 'b'->'a'} as: JsonObject).
 ]
 
 { #category : #'as yet unclassified' }
@@ -114,9 +116,16 @@ JsonTests >> testMissingCtorNoMap [
 ]
 
 { #category : #'as yet unclassified' }
+JsonTests >> testStringWithUnicode [
+	self json: '"\u263A"' equals: (Unicode value: 16r263A) asString.
+	self render: (Unicode value: 16r263A) asString equals: '"\u263A"'.
+]
+
+{ #category : #'as yet unclassified' }
 JsonTests >> testWriteString [
 	self render: '"' equals: '"\""'.
 	self render: '\' equals: '"\\"'.
 	self render: 'hi' equals: '"hi"'.
 	self render: ({$a. Character lf. $b} as: String) equals: '"a\nb"'.
+	self render: ({$a. Character value: 4. $b} as: String) equals: '"a\u0004b"'.
 ]

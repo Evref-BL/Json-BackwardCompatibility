@@ -2,16 +2,16 @@ Extension { #name : #Dictionary }
 
 { #category : #'*JSON-writing' }
 Dictionary >> jsonWriteOn: aStream [
+
 	| needComma |
-	needComma _ false.
+	needComma := false.
 	aStream nextPut: ${.
-	self keysAndValuesDo: [:k :v |
+	self associationsDo: [ :assoc |
 		needComma
-			ifTrue: [ aStream nextPutAll: ', ' ]
-			ifFalse: [ needComma _ true ].
-		k asString jsonWriteOn: aStream.
-		aStream nextPutAll: ': '.
-		v jsonWriteOn: aStream.
-	].
+			ifTrue: [ aStream nextPut: $, ]
+			ifFalse: [ needComma := true ].
+		assoc key asString jsonWriteOn: aStream.
+		aStream nextPut: $:.
+		assoc value jsonWriteOn: aStream ].
 	aStream nextPut: $}.
 ]
