@@ -33,7 +33,7 @@ JsonDummyTestObject >> a [
 JsonDummyTestObject >> a: anObject [
 	"Set the value of a"
 
-	a _ anObject
+	a := anObject
 ]
 
 { #category : #accessing }
@@ -47,7 +47,7 @@ JsonDummyTestObject >> b [
 JsonDummyTestObject >> b: anObject [
 	"Set the value of b"
 
-	b _ anObject
+	b := anObject
 ]
 
 { #category : #accessing }
@@ -61,7 +61,7 @@ JsonDummyTestObject >> c [
 JsonDummyTestObject >> c: anObject [
 	"Set the value of c"
 
-	c _ anObject
+	c := anObject
 ]
 
 { #category : #'as yet unclassified' }

@@ -51,7 +51,7 @@ Json class >> mimeType [
 { #category : #'as yet unclassified' }
 Json class >> newWithConstructors: aCollection [
 	| m |
-	m _ Dictionary new.
+	m := Dictionary new.
 	aCollection do: [:each |
 		(each isKindOf: Association)
 			ifTrue: [m add: each]
@@ -87,7 +87,7 @@ Json class >> render: anObject withConstructor: aConstructorName on: aStream [
 { #category : #'as yet unclassified' }
 Json class >> renderInstanceVariables: aCollection of: anObject on: aStream [
 	| map |
-	map _ Dictionary new.
+	map := Dictionary new.
 	aCollection do: [:ivarName | map at: ivarName put: (anObject instVarNamed: ivarName)].
 	self render: map withConstructor: anObject class name asString on: aStream
 ]
@@ -105,7 +105,7 @@ Json >> ctorMap [
 
 { #category : #accessing }
 Json >> ctorMap: m [
-	ctorMap _ m
+	ctorMap := m
 ]
 
 { #category : #private }
@@ -152,14 +152,14 @@ Json >> readAny [
 Json >> readArray [
 	| a needComma |
 	a := OrderedCollection new.
-	needComma _ false.
+	needComma := false.
 	[
 		self skipWhitespace.
 		self peek == $] ifTrue: [self next. ^ a asArray].
 		needComma
 			ifTrue: [self peek == $, ifFalse: [JsonSyntaxError signal: 'Missing comma'].
 					self next.]
-			ifFalse: [needComma _ true]. 
+			ifFalse: [needComma := true]. 
 		a add: self readAny.
 	] repeat.
 
@@ -177,7 +177,7 @@ Json >> readConstructor [
 			ifFalse: [
 				v := self readAny.
 				s := s contents.
-				ctor _ ctorMap ifNotNil: [ctor _ ctorMap at: s ifAbsent: [nil]].
+				ctor := ctorMap ifNotNil: [ctor := ctorMap at: s ifAbsent: [nil]].
 				ctor ifNil: [JsonSyntaxError signal: 'Unknown ctor ', s].
 				^ ctor constructFromJson: v]
 	] repeat.
@@ -188,7 +188,7 @@ Json >> readConstructor [
 Json >> readDictionary [
 	| m k v needComma |
 	m := JsonObject new.
-	needComma _ false.
+	needComma := false.
 	[
 		self skipWhitespace.
 		self peek == $} ifTrue: [self next. ^ m].
