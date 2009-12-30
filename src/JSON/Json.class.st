@@ -195,7 +195,7 @@ Json >> readDictionary [
 		needComma
 			ifTrue: [self peek == $, ifFalse: [JsonSyntaxError signal: 'Missing comma'].
 					self next. self skipWhitespace]
-			ifFalse: [needComma _ true.].
+			ifFalse: [needComma := true.].
 		self next == $" ifFalse: [JsonSyntaxError signal: 'Key in dictionary must be string'].
 		k := self readString.
 		self skipWhitespace.
