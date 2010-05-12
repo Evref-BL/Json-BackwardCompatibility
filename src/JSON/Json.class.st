@@ -20,7 +20,10 @@ Json class >> escapeForCharacter: c [
 	| index |
 	^ (index := c asciiValue + 1) <= escapeArray size
 		ifTrue: [ ^ escapeArray at: index ]
-		ifFalse: [ ^ '\u', ((c asciiValue bitAnd: 16rFFFF) printStringBase: 16) ]
+
+
+		"THIS IS WROOONG!!! unicode is not 16bit wide!"
+		ifFalse: [ ^ '\u', (((c asciiValue bitAnd: 16rFFFF) printStringBase: 16) padded: #left to: 4 with: $0) ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -195,7 +198,7 @@ Json >> readDictionary [
 		needComma
 			ifTrue: [self peek == $, ifFalse: [JsonSyntaxError signal: 'Missing comma'].
 					self next. self skipWhitespace]
-			ifFalse: [needComma := true.].
+			ifFalse: [needComma _ true.].
 		self next == $" ifFalse: [JsonSyntaxError signal: 'Key in dictionary must be string'].
 		k := self readString.
 		self skipWhitespace.

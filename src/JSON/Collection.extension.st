@@ -2,14 +2,12 @@ Extension { #name : #Collection }
 
 { #category : #'*json' }
 Collection >> jsonWriteOn: aStream [
-	| needComma |
-	needComma := false.
+	"By default, use array braces "
 	aStream nextPut: $[.
-	self do: [:v |
-		needComma
-			ifTrue: [ aStream nextPut: $, ]
-			ifFalse: [ needComma := true ].
-		v jsonWriteOn: aStream.
-	].
-	aStream nextPut: $].
+	
+	self do: [:each |
+		each jsonWriteOn: aStream
+		  ] separatedBy: [ aStream nextPut: $, ].
+
+	aStream nextPut: $]
 ]

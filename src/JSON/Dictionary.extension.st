@@ -10,7 +10,7 @@ Dictionary >> jsonWriteOn: aStream [
 		needComma
 			ifTrue: [ aStream nextPut: $, ]
 			ifFalse: [ needComma := true ].
-		assoc key asString jsonWriteOn: aStream.
+		assoc key jsonWriteOn: aStream.
 		aStream nextPut: $:.
 		assoc value jsonWriteOn: aStream ].
 	aStream nextPut: $}.
