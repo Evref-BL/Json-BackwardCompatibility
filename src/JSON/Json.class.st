@@ -97,7 +97,7 @@ Json class >> renderInstanceVariables: aCollection of: anObject on: aStream [
 
 { #category : #private }
 Json >> consume: aString returning: anObject [
-	aString do: [:c | self next == c ifFalse: [JsonSyntaxError signal: 'Expected ''', aString, ''''] ].
+	aString do: [:c | stream next == c ifFalse: [JsonSyntaxError signal: 'Expected ''', aString, ''''] ].
 	^ anObject
 ]
 
@@ -114,7 +114,7 @@ Json >> ctorMap: m [
 { #category : #private }
 Json >> interpretStringEscape [
 	| c |
-	c := self next.
+	c := stream next.
 	c == $b ifTrue: [^ Character backspace].
 	c == $n ifTrue: [^ Character lf].
 	c == $f ifTrue: [^ Character newPage].
@@ -124,46 +124,36 @@ Json >> interpretStringEscape [
 	^ c.
 ]
 
-{ #category : #private }
-Json >> next [
-	^ self stream next
-]
-
-{ #category : #private }
-Json >> peek [
-	^ self stream peek
-]
-
 { #category : #parsing }
 Json >> readAny [
 	"This is the main entry point for the JSON parser. See also readFrom: on the class side."
 	| c |
 	self skipWhitespace.
-	c := self peek asLowercase.
-	c == ${ ifTrue: [self next. ^ self readDictionary].
-	c == $[ ifTrue: [self next. ^ self readArray].
-	c == $" ifTrue: [self next. ^ self readString].
+	c := stream peek asLowercase.
+	c == ${ ifTrue: [stream next. ^ self readDictionary].
+	c == $[ ifTrue: [stream next. ^ self readArray].
+	c == $" ifTrue: [stream next. ^ self readString].
 	c == $t ifTrue: [^ self consume: 'true' returning: true].
 	c == $f ifTrue: [^ self consume: 'false' returning: false].
 	c == $n ifTrue: [^ self consume: 'null' returning: nil].
-	c == $@ ifTrue: [self next. ^ self readConstructor].
+	c == $@ ifTrue: [stream next. ^ self readConstructor].
 	(Json numbersMayContain: c) ifTrue: [^ self readNumber].
 	JsonSyntaxError signal: 'Unknown Json input'
 ]
 
 { #category : #private }
 Json >> readArray [
-	| a needComma |
+	| a |
 	a := OrderedCollection new.
-	needComma := false.
+
+	self skipWhitespace.
+	(stream peekFor: $]) ifTrue: [ ^ #() ].	
+
 	[
-		self skipWhitespace.
-		self peek == $] ifTrue: [self next. ^ a asArray].
-		needComma
-			ifTrue: [self peek == $, ifFalse: [JsonSyntaxError signal: 'Missing comma'].
-					self next.]
-			ifFalse: [needComma := true]. 
 		a add: self readAny.
+		self skipWhitespace.
+		(stream peekFor: $]) ifTrue: [ ^ a asArray].
+		(stream peekFor: $, ) ifFalse: [JsonSyntaxError signal: 'Missing comma'].
 	] repeat.
 
 ]
@@ -173,10 +163,10 @@ Json >> readConstructor [
 	| s c v ctor |
 	s := WriteStream on: ''.
 	[
-		c := self peek.
+		c := stream peek.
 		c ifNil: [JsonSyntaxError signal: 'Premature EOF reading constructor name'].
 		((c == $.) or: [c isLetter])
-			ifTrue: [s nextPut: c. self next]
+			ifTrue: [s nextPut: c. stream next]
 			ifFalse: [
 				v := self readAny.
 				s := s contents.
@@ -194,16 +184,16 @@ Json >> readDictionary [
 	needComma := false.
 	[
 		self skipWhitespace.
-		self peek == $} ifTrue: [self next. ^ m].
+		(stream peekFor: $}) ifTrue: [ ^ m].
 		needComma
-			ifTrue: [self peek == $, ifFalse: [JsonSyntaxError signal: 'Missing comma'].
-					self next. self skipWhitespace]
-			ifFalse: [needComma _ true.].
-		self next == $" ifFalse: [JsonSyntaxError signal: 'Key in dictionary must be string'].
+			ifTrue: [ (stream peekFor: $,) ifFalse: [JsonSyntaxError signal: 'Missing comma'].
+					self skipWhitespace]
+			ifFalse: [needComma := true].
+"		k := self readAny. "
+		(stream peekFor: $") ifFalse: [JsonSyntaxError signal: 'Key in dictionary must be string'].
 		k := self readString.
 		self skipWhitespace.
-		self peek == $: ifFalse: [JsonSyntaxError signal: 'Missing colon'].
-		self next.
+		(stream peekFor: $:) ifFalse: [JsonSyntaxError signal: 'Missing colon'].
 		v := self readAny.
 		m at: k put: v.
 	] repeat.
@@ -221,11 +211,11 @@ Json >> readNumber [
 	| acc c |
 	acc := WriteStream on: ''.
 	[
-		c := self peek.
+		c := stream peek.
 		(c isNil not and: [Json numbersMayContain: c]) ifFalse: [
 			[^ acc contents asNumber] on: Error do: [JsonSyntaxError signal: 'Invalid number']].
 		acc nextPut: c.
-		self next.
+		stream next.
 	] repeat.
 ]
 
@@ -234,7 +224,7 @@ Json >> readString [
 	| s c |
 	s := WriteStream on: ''.
 	[
-		c := self next.
+		c := stream next.
 		c == $\
 			ifTrue: [s nextPut: self interpretStringEscape.]
 			ifFalse: [c == $" ifTrue: [^ s contents.].
@@ -244,12 +234,12 @@ Json >> readString [
 
 { #category : #private }
 Json >> skipComment [
-	self peek == $/ ifTrue: [
-		self next.
-		self peek == $/
+	stream peek == $/ ifTrue: [
+		stream next.
+		stream peek == $/
 			ifTrue: [self skipToEndOfLine]
-			ifFalse: [self peek == $*
-						ifTrue: [self next. self skipCommentBody]
+			ifFalse: [stream peek == $*
+						ifTrue: [stream next. self skipCommentBody]
 						ifFalse: [JsonSyntaxError signal: 'Invalid comment syntax']]]
 
 ]
@@ -257,22 +247,24 @@ Json >> skipComment [
 { #category : #private }
 Json >> skipCommentBody [
 	[
-		[self next == $*] whileFalse.
-		self peek == $/
+		[stream next == $*] whileFalse.
+		stream peek == $/
 	] whileFalse.
-	self next. "skip that last slash"
+	stream next. "skip that last slash"
 	self skipWhitespace.
 ]
 
 { #category : #private }
 Json >> skipToEndOfLine [
-	[self peek == Character cr or: [self peek == Character lf]] whileFalse: [self next].
+	| cr lf |
+	cr := Character cr. lf := Character lf.
+	[ | c | (c := stream peek) == cr or: [ c == lf]] whileFalse: [stream next].
 	self skipWhitespace
 ]
 
 { #category : #private }
 Json >> skipWhitespace [
-	[self peek isSeparator] whileTrue: [self next].
+	[stream peek isSeparator] whileTrue: [stream next].
 	self skipComment.
 ]
 
@@ -297,6 +289,6 @@ Json >> stream: anObject [
 { #category : #private }
 Json >> unescapeUnicode [
 	|string|
-	string := (String with: self next with: self next with: self next with: self next) asUppercase.
-	^ Unicode value: (Number readFrom: '16r', string)
+	string := (String with: stream next with: stream next with: stream next with: stream next) asUppercase.
+	^ Unicode value: (Integer readFrom: string readStream base: 16)
 ]
