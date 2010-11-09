@@ -17,13 +17,10 @@ Class {
 { #category : #'as yet unclassified' }
 Json class >> escapeForCharacter: c [
 	
-	| index |
-	^ (index := c asciiValue + 1) <= escapeArray size
-		ifTrue: [ ^ escapeArray at: index ]
-
-
-		"THIS IS WROOONG!!! unicode is not 16bit wide!"
-		ifFalse: [ ^ '\u', (((c asciiValue bitAnd: 16rFFFF) printStringBase: 16) padded: #left to: 4 with: $0) ]
+	| asciiValue |
+	(asciiValue := c asciiValue) < 128
+		ifTrue: [ ^escapeArray at: asciiValue + 1 ].
+	^nil
 ]
 
 { #category : #'as yet unclassified' }

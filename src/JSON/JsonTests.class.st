@@ -117,8 +117,12 @@ JsonTests >> testMissingCtorNoMap [
 
 { #category : #'as yet unclassified' }
 JsonTests >> testStringWithUnicode [
-	self json: '"\u263A"' equals: (Unicode value: 16r263A) asString.
-	self render: (Unicode value: 16r263A) asString equals: '"\u263A"'.
+
+	| unicodeString |
+	unicodeString := (Unicode value: 16r263A) asString.
+	self json: '"\u263A"' equals:unicodeString.
+	self json: '"', unicodeString, '"' equals: unicodeString.
+	self render: unicodeString equals: '"', unicodeString, '"'.
 ]
 
 { #category : #'as yet unclassified' }
