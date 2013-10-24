@@ -1,6 +1,3 @@
-"
-(ConfigurationOfJSON project version: '1.0) load
-"
 Class {
 	#name : #ConfigurationOfJSON,
 	#superclass : #Object,
@@ -148,15 +145,14 @@ ConfigurationOfJSON class >> validate [
 { #category : #baselines }
 ConfigurationOfJSON >> baseline10: spec [
 	<version: '1.0-baseline'>
-	
-	spec for: #common do: [
-		spec 
-			blessing: #baseline;
-			repository: 'http://smalltalkhub.com/mc/PharoExtras/JSON/main';
-			package: 'JSON'.
-		spec 
-			group: 'default' with: #('JSON');
-			group: 'Core' with: #('JSON') ]
+	spec
+		for: #common
+		do: [ 
+			spec repository: 'http://smalltalkhub.com/mc/PharoExtras/JSON/main'.
+			spec blessing: #baseline.
+			spec package: 'JSON'.
+			spec group: 'default' with: #('JSON') ].
+	spec for: #gemstone do: [ spec repository: 'http://www.smalltalkhub.com/mc/pdebruic/JSONg/main' ]
 ]
 
 { #category : #'symbolic versions' }
@@ -173,7 +169,7 @@ ConfigurationOfJSON >> project [
 		"Bootstrap Metacello if it is not already loaded"
 		(self class baseConfigurationClassIfAbsent: []) ensureMetacello.
 		"Construct Metacello project"
-		constructor := (Smalltalk globals at: #MetacelloVersionConstructor) on: self.
+		constructor := (Smalltalk at: #MetacelloVersionConstructor) on: self.
 		project := constructor project.
 		project loadType: #linear. "change to #atomic if desired"
 		project ]
@@ -186,12 +182,16 @@ ConfigurationOfJSON >> stable: spec [
 	spec for: #common version: '1.0'
 ]
 
-{ #category : #versions }
+{ #category : #accessing }
 ConfigurationOfJSON >> version10: spec [
 	<version: '1.0' imports: #('1.0-baseline')>
-	
-	spec for: #common do: [
-		spec
-			blessing: #release;
-			package: 'JSON' with: 'JSON-ul.35' ]
+	spec
+		for: #common
+		do: [ 
+			spec blessing: #development.
+			spec description: 'life is easier with metacello'.
+			spec author: 'PaulDeBruicker'.
+			spec timestamp: '9/7/2013 12:45' ].
+	spec for: #squeakCommon do: [ spec package: 'JSON' with: 'JSON-ul.35' ].
+	spec for: #gemstone do: [ spec package: 'JSON' with: 'JSON-PaulDeBruicker.40' ]
 ]
