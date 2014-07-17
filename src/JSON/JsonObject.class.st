@@ -15,6 +15,25 @@ JsonObject class >> fromAssociations: collectionOfAssociations [
 	^ result
 ]
 
+{ #category : #comparing }
+JsonObject >> addJsonDifferencesWith: aJsonObject to: anOrderedCollection [
+	self keys sort = aJsonObject keys sort
+		ifTrue: [ self addValueDifferencesWith: aJsonObject to: anOrderedCollection ]
+		ifFalse: [ 
+			anOrderedCollection
+				add: 'keys are different actual:' , self keys sort greaseString , ' expected: ' , aJsonObject keys sort greaseString ]
+]
+
+{ #category : #comparing }
+JsonObject >> addValueDifferencesWith: aJsonObject to: anOrderedCollection [
+	self
+		keysAndValuesDo: [ :key :val | 
+			| otherVal |
+			otherVal := aJsonObject at: key.
+			val = otherVal
+				ifFalse: [ val addJsonDifferencesWith: otherVal to: anOrderedCollection ] ]
+]
+
 { #category : #accessing }
 JsonObject >> at: aKey [
 
@@ -33,6 +52,14 @@ JsonObject >> doesNotUnderstand: aMessage [
 		ifFalse: [super doesNotUnderstand: aMessage]
 				
 	
+]
+
+{ #category : #comparing }
+JsonObject >> jsonDifferencesWith: aJsonObject [
+	| diffs |
+	diffs := OrderedCollection new.
+	self addJsonDifferencesWith: aJsonObject to: diffs.
+	^ diffs
 ]
 
 { #category : #accessing }
