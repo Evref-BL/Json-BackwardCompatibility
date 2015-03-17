@@ -29,7 +29,7 @@ Json class >> initialize [
 	
 	escapeArray := Array new: 128.
 	(0 to: 31), #(127) do: [ :each |
-		escapeArray at: each + 1 put: '\u', (each printStringHex padded: #left to: 4 with: $0) ].
+		escapeArray at: each + 1 put: '\u', (each printStringHex padLeftTo: 4 with: $0) ].
 	{
 		$" -> '\"'.
 		$\ -> '\\'.
