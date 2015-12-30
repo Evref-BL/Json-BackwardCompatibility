@@ -177,9 +177,8 @@ ConfigurationOfJSON >> project [
 
 { #category : #'symbolic versions' }
 ConfigurationOfJSON >> stable: spec [
-	<symbolicVersion: #'stable'>
-	
-	spec for: #common version: '1.1'
+	<symbolicVersion: #stable>
+	spec for: #common version: '1.2'
 ]
 
 { #category : #versions }
@@ -199,6 +198,18 @@ ConfigurationOfJSON >> version10: spec [
 { #category : #versions }
 ConfigurationOfJSON >> version11: spec [
 	<version: '1.1' imports: #('1.0-baseline')>
+	spec
+		for: #common
+		do: [ 
+			spec blessing: #release.
+			spec author: 'TommasoDalSasso' ].
+	spec for: #squeakCommon do: [ spec package: 'JSON' with: 'JSON-TommasoDalSasso.38' ].
+	spec for: #gemstone do: [ spec package: 'JSON' with: 'JSON-PaulDeBruicker.40' ]
+]
+
+{ #category : #versions }
+ConfigurationOfJSON >> version12: spec [
+	<version: '1.2' imports: #('1.0-baseline')>
 	spec
 		for: #common
 		do: [ 
