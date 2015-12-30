@@ -204,6 +204,6 @@ ConfigurationOfJSON >> version11: spec [
 		do: [ 
 			spec blessing: #release.
 			spec author: 'TommasoDalSasso' ].
-	spec for: #squeakCommon do: [ spec package: 'JSON' with: 'JSON-TommasoDalSasso.38' ].
+	spec for: #squeakCommon do: [ spec package: 'JSON' with: 'JSON-PaulDeBruicker.39' ].
 	spec for: #gemstone do: [ spec package: 'JSON' with: 'JSON-PaulDeBruicker.40' ]
 ]
