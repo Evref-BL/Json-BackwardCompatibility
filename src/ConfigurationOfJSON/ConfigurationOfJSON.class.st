@@ -159,7 +159,7 @@ ConfigurationOfJSON >> baseline10: spec [
 ConfigurationOfJSON >> development: spec [
 	<symbolicVersion: #'development'>
 	
-	spec for: #common version: '1.1'
+	spec for: #common version: '1.2'
 ]
 
 { #category : #accessing }
